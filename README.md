@@ -1,13 +1,22 @@
-# mcp-oecd
+# @pipeworx/oecd
 
-OECD MCP — Organisation for Economic Co-operation and Development data
+OECD data MCP — SDMX 2.1 REST API at sdmx.oecd.org, no auth.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 673+ live data sources.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1394+ live data sources.
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
+- `list_curated_flows(topic?)` — pre-vetted dataflow refs by topic.
+- `search_dataflows(query, agency?, limit?)` — keyword search against the dataflow registry.
+- `fetch_dataset(flow_ref, key?, start_period?, end_period?, limit?)` — tidy CSV-with-labels rows for any OECD dataflow.
+
+## Finding flow refs
+
+Browse https://data-explorer.oecd.org interactively, or use `search_dataflows`.
+
+## Data source
+
+`https://sdmx.oecd.org/public/rest/` — public, no key required.
 
 ## Quick Start
 
@@ -23,7 +32,7 @@ Add to your MCP client (Claude Desktop, Cursor, Windsurf, etc.):
 }
 ```
 
-Or connect to the full Pipeworx gateway for access to all 673+ data sources:
+Or connect to the full Pipeworx gateway for access to all 1394+ data sources:
 
 ```json
 {
@@ -47,7 +56,7 @@ The gateway picks the right tool and fills the arguments automatically.
 
 ## More
 
-- [All tools and guides](https://github.com/pipeworx-io/examples)
+- [Docs and guides](https://pipeworx.io/docs)
 - [pipeworx.io](https://pipeworx.io)
 
 ## License
