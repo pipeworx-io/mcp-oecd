@@ -1143,8 +1143,10 @@ async function fetchDataset(
     if (missResult) return missResult;
     throw new Error(`OECD data error: ${res.status} ${body.slice(0, 200)}`);
   }
-  const csv = await res.text();
-  const rows = parseCsv(csv);
+  // header + limit data rows; stop reading once we have them. An unkeyed
+  // curated flow is tens of MB of CSV, and buffering it all ran the Worker out
+  // of memory ("Memory limit exceeded" / CF 1102) before `limit` was applied.
+  const { rows, more } = await readCsvRows(res, limit + 1);
   if (rows.length === 0) {
     return {
       flow_ref: flowRef,
@@ -1175,51 +1177,79 @@ async function fetchDataset(
     ...(versionNote ? { requested_flow_ref: flowRef, version_note: versionNote } : {}),
     source_url: `https://data-explorer.oecd.org/?fs[0]=Topic%2C0&pg=0&fc=Topic&snb=&qf=DataflowId%3D${servedRef}`,
     columns: header,
-    truncated: rows.length - 1 > limit,
+    truncated: more,
     count: out.length,
     rows: out,
   };
 }
 
 // ── CSV parsing (OECD emits standard quoted CSV) ──────────────────────
-function parseCsv(text: string): string[][] {
+/**
+ * Stream-parse a CSV response, stopping (and cancelling the body) once
+ * `maxRows` non-blank rows are in. `more` is true when rows were left unread.
+ */
+async function readCsvRows(res: Response, maxRows: number): Promise<{ rows: string[][]; more: boolean }> {
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = '';
   let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (inQuotes) {
-      if (ch === '"' && text[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else if (ch === '"') {
+  let pendingQuote = false; // saw '"' inside quotes at a chunk end; next char decides
+  const endRow = () => {
+    row.push(cell);
+    if (!(row.length === 1 && row[0] === '')) rows.push(row);
+    row = [];
+    cell = '';
+  };
+  const feed = (text: string) => {
+    for (let i = 0; i < text.length && rows.length < maxRows; i++) {
+      const ch = text[i];
+      if (pendingQuote) {
+        pendingQuote = false;
+        if (ch === '"') {
+          cell += '"';
+          continue;
+        }
         inQuotes = false;
-      } else {
-        cell += ch;
       }
-    } else {
-      if (ch === '"') inQuotes = true;
+      if (inQuotes) {
+        if (ch === '"') {
+          if (i + 1 < text.length) {
+            if (text[i + 1] === '"') {
+              cell += '"';
+              i++;
+            } else inQuotes = false;
+          } else pendingQuote = true;
+        } else cell += ch;
+      } else if (ch === '"') inQuotes = true;
       else if (ch === ',') {
         row.push(cell);
         cell = '';
-      } else if (ch === '\n') {
-        row.push(cell);
-        rows.push(row);
-        row = [];
-        cell = '';
-      } else if (ch === '\r') {
-        // skip
-      } else {
-        cell += ch;
+      } else if (ch === '\n') endRow();
+      else if (ch !== '\r') cell += ch;
+    }
+  };
+
+  if (!res.body) {
+    feed(await res.text());
+  } else {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        feed(decoder.decode());
+        break;
+      }
+      feed(decoder.decode(value, { stream: true }));
+      if (rows.length >= maxRows) {
+        await reader.cancel().catch(() => {});
+        return { rows, more: true };
       }
     }
   }
-  if (cell.length > 0 || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows;
+  if (pendingQuote) inQuotes = false;
+  if (rows.length < maxRows && (cell.length > 0 || row.length > 0)) endRow();
+  return { rows, more: false };
 }
 
 export default { tools, callTool, meter: { credits: 1 } } satisfies McpToolExport;

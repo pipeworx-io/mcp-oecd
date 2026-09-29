@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-oecd",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "OECD MCP — Organisation for Economic Co-operation and Development data",
   "type": "module",
   "main": "src/index.ts",
@@ -26,7 +26,7 @@
     "@cloudflare/workers-types": "^4.20260405.1"
   },
   "pipeworx": {
-    "sourceHash": "v1-272dc8aa1100e2c7aa9100e18555bc637748a9fd4caf7d2bf9e607d980d175ee",
-    "sourceCommit": "904686a205e7659f86731df3f45eb88b9333c5a0"
+    "sourceHash": "v1-f28dd09c87d11872499ec784c3b28bc746dfd2290c506ada5abb2fdcaf8cb0de",
+    "sourceCommit": "e3958cfffb81b0180d239f23ef559a03d206d399"
   }
 }
