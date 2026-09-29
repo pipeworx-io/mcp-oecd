@@ -882,14 +882,14 @@ interface CuratedFlow {
 
 const CURATED_FLOWS: CuratedFlow[] = [
   {
-    flow_ref: 'OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH,1.0',
+    flow_ref: 'OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_OECD,1.1',
     topic: 'gdp',
-    title: 'Quarterly GDP growth, expenditure approach',
+    title: 'Quarterly real GDP growth — OECD countries',
   },
   {
     flow_ref: 'OECD.SDD.TPS,DSD_LFS@DF_IALFS_INDIC,1.0',
     topic: 'labour',
-    title: 'Labour force statistics — unemployment, employment',
+    title: 'Infra-annual labour statistics — unemployment, employment',
   },
   {
     flow_ref: 'OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0',
@@ -897,47 +897,48 @@ const CURATED_FLOWS: CuratedFlow[] = [
     title: 'Consumer prices — headline and core CPI by country',
   },
   {
-    flow_ref: 'OECD.STD.STES,DSD_STES@DF_FINMARK,1.0',
+    flow_ref: 'OECD.SDD.STES,DSD_STES@DF_FINMARK,4.0',
     topic: 'finance',
     title: 'Financial markets — short-term and long-term interest rates',
   },
   {
-    flow_ref: 'OECD.SDD.NAD,DSD_HH@DF_HH_DASH,1.0',
+    flow_ref: 'OECD.SDD.NAD,DSD_HHDASH@DF_HHDASH_INDIC,1.1',
     topic: 'households',
     title: 'Household dashboard — disposable income, savings, debt',
   },
   {
-    flow_ref: 'OECD.WISE,DSD_HSP@DF_HSP,1.0',
+    flow_ref: 'OECD.ELS.HD,DSD_SHA@DF_SHA,1.1',
     topic: 'health',
-    title: 'Health spending and resources',
+    title: 'Health expenditure and financing',
   },
   {
-    flow_ref: 'OECD.SDD.TPS,DSD_POPULATION@DF_POP_HIST,1.0',
+    flow_ref: 'OECD.ELS.SAE,DSD_POPULATION@DF_POP_HIST,1.0',
     topic: 'demographics',
     title: 'Historical population by age and sex',
   },
   {
-    flow_ref: 'OECD.ECO,DSD_EO@DF_EO,1.0',
+    flow_ref: 'OECD.ECO.MAD,DSD_EO@DF_EO,1.5',
     topic: 'projections',
     title: 'Economic Outlook — forward-looking projections',
+    notes: 'The version bumps with each Outlook edition; a superseded version is resolved to the latest automatically.',
   },
   {
-    flow_ref: 'OECD.CTP,DSD_REV@DF_REV,1.0',
+    flow_ref: 'OECD.CTP.TPS,DSD_REV_COMP_OECD@DF_RSOECD,2.0',
     topic: 'tax',
-    title: 'Revenue statistics — tax revenue by country and type',
+    title: 'Revenue statistics — comparative tax revenue across OECD members',
   },
   {
-    flow_ref: 'OECD.EDU.IMEP,DSD_EAG_FIN_RES@DF_EDU_FIN_INDIC,1.0',
+    flow_ref: 'OECD.EDU.IMEP,DSD_EAG_UOE_FIN@DF_UOE_INDIC_FIN_PERSTUD,3.2',
     topic: 'education',
-    title: 'Education at a glance — financial indicators',
+    title: 'Education at a glance — expenditure per student',
   },
   {
-    flow_ref: 'OECD.ENV,DSD_AIR_GHG@DF_AIR_GHG,1.0',
+    flow_ref: 'OECD.ENV.EPI,DSD_AIR_GHG@DF_AIR_GHG,1.0',
     topic: 'environment',
     title: 'Greenhouse-gas emissions by source',
   },
   {
-    flow_ref: 'OECD.STI.PIE,DSD_ICT@DF_BUS_ICTU,1.0',
+    flow_ref: 'OECD.STI.DEP,DSD_ICT_B@DF_BUSINESSES,1.0',
     topic: 'technology',
     title: 'ICT use by businesses',
   },
@@ -976,7 +977,7 @@ const tools: McpToolExport['tools'] = [
   {
     name: 'fetch_dataset',
     description:
-      'Fetch tidy rows from any OECD dataflow. flow_ref examples: "OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH,1.0". The key string is a dot-separated dimension filter (e.g., "USA.....Q" — leave empty to fetch everything). Use start/end periods like "2020-Q1" or "2020". Returns labeled rows; OECD enforces a result-size limit and may truncate broad queries — narrow with key dimensions or shorter time ranges.',
+      'Fetch tidy rows from any OECD dataflow. flow_ref examples: "OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_OECD,1.1". The key string is a dot-separated dimension filter, one position per dimension (e.g., "Q..USA.........." for that flow) — leave empty to fetch everything). Use start/end periods like "2020-Q1" or "2020". Returns labeled rows; OECD enforces a result-size limit and may truncate broad queries — narrow with key dimensions or shorter time ranges.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1011,7 +1012,7 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       );
     case 'fetch_dataset':
       return fetchDataset(
-        reqStr(args, 'flow_ref', '"OECD.SDD.NAD,DSD_NAQU@DF_QNA,1.1" (from list_curated_flows or search_dataflows)'),
+        reqStr(args, 'flow_ref', '"OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA,1.1" (from list_curated_flows or search_dataflows)'),
         (args.key as string | undefined) ?? '',
         args.start_period as string | undefined,
         args.end_period as string | undefined,
@@ -1081,12 +1082,32 @@ async function fetchDataset(
   end: string | undefined,
   limit: number,
 ) {
-  const url = new URL(`${SDMX_BASE}/data/${encodeURIComponent(flowRef)}/${key}`);
-  url.searchParams.set('format', 'csvfilewithlabels');
-  if (start) url.searchParams.set('startPeriod', start);
-  if (end) url.searchParams.set('endPeriod', end);
+  const dataUrl = (ref: string) => {
+    const url = new URL(`${SDMX_BASE}/data/${encodeURIComponent(ref)}/${key}`);
+    url.searchParams.set('format', 'csvfilewithlabels');
+    if (start) url.searchParams.set('startPeriod', start);
+    if (end) url.searchParams.set('endPeriod', end);
+    return url.toString();
+  };
 
-  const res = await pwFetch(url.toString());
+  let res = await pwFetch(dataUrl(flowRef));
+  // OECD bumps a flow's version and drops the old one (Economic Outlook moves
+  // with every edition), so a flow_ref copied from an example or a model's
+  // memory 404s as "no dataflow" while the flow itself still exists. An empty
+  // version resolves to the latest; retry once that way and say so in the
+  // result rather than making the caller rediscover it (fleet #2497).
+  let versionNote: string | undefined;
+  const parts = flowRef.split(',');
+  if (res.status === 404 && parts.length === 3 && parts[2].trim()) {
+    const body = await res.clone().text();
+    if (classifySdmxMiss(res.status, body) === 'no_dataflow') {
+      const latest = await pwFetch(dataUrl(`${parts[0]},${parts[1]},`));
+      if (latest.ok) {
+        res = latest;
+        versionNote = `OECD no longer serves version ${parts[2]} of ${parts[0]},${parts[1]}; these rows are from its latest version.`;
+      }
+    }
+  }
   if (!res.ok) {
     const body = await res.text();
     // OECD runs .Stat Suite: 404 NoRecordsFound (flow exists, key/period
@@ -1145,9 +1166,14 @@ async function fetchDataset(
     out.push(obj);
   }
 
+  // STRUCTURE_ID reads "AGENCY:ID(VERSION)"; report the version actually served.
+  const resolvedVersion = versionNote ? /\(([^)]+)\)\s*$/.exec(out[0]?.STRUCTURE_ID ?? '')?.[1] : undefined;
+  const servedRef = versionNote && resolvedVersion ? `${parts[0]},${parts[1]},${resolvedVersion}` : flowRef;
+
   return {
-    flow_ref: flowRef,
-    source_url: `https://data-explorer.oecd.org/?fs[0]=Topic%2C0&pg=0&fc=Topic&snb=&qf=DataflowId%3D${flowRef}`,
+    flow_ref: servedRef,
+    ...(versionNote ? { requested_flow_ref: flowRef, version_note: versionNote } : {}),
+    source_url: `https://data-explorer.oecd.org/?fs[0]=Topic%2C0&pg=0&fc=Topic&snb=&qf=DataflowId%3D${servedRef}`,
     columns: header,
     truncated: rows.length - 1 > limit,
     count: out.length,

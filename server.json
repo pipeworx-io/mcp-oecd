@@ -3,7 +3,7 @@
   "name": "io.github.pipeworx-io/oecd",
   "title": "Oecd",
   "description": "OECD MCP — Organisation for Economic Co-operation and Development data",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "websiteUrl": "https://pipeworx.io/packs/oecd",
   "repository": {
     "url": "https://github.com/pipeworx-io/mcp-oecd",
