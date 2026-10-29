@@ -1,12 +1,20 @@
 {
   "name": "@pipeworx/mcp-oecd",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "OECD MCP — Organisation for Economic Co-operation and Development data (free, no auth) via the SDMX 2.1 REST API at sdmx.oecd.org.",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./tools.json": "./tools.json",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "mcp-oecd": "bin/cli.js"
+  },
+  "files": ["bin/", "lib/", "tools.json", "server.json"],
+  "engines": {
+    "node": ">=18"
   },
   "keywords": ["mcp", "mcp-server", "model-context-protocol", "pipeworx", "oecd"],
   "license": "MIT",
@@ -14,19 +22,12 @@
     "type": "git",
     "url": "git+https://github.com/pipeworx-io/mcp-oecd.git"
   },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "tsx": "^4.19.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "@cloudflare/workers-types": "^4.20260405.1"
-  },
+  "mcpName": "io.github.pipeworx-io/oecd",
   "pipeworx": {
-    "sourceHash": "v1-a77e9eb6b33c2a1a1694e6ff23ccea78ee516b502cb04ea8509e2a959a48c74b",
-    "sourceCommit": "f54ad77e789f27fe393978f9c080b5b18c87bb4f"
+    "mode": "gateway",
+    "slug": "oecd",
+    "gatewaySlug": "oecd",
+    "sourceHash": "v1-e47b80c5288e8b6ca552fa7c15801ed2c3d22eec686d6079ea196a5c40878140",
+    "sourceCommit": "b2c4383545bb35171d0ada2beb1c9c7168ea175e"
   }
 }

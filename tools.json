@@ -1,0 +1,72 @@
+[
+  {
+    "name": "list_curated_flows",
+    "description": "List OECD dataflow refs we have pre-vetted, grouped by topic (gdp, labour, prices, finance, households, health, demographics, projections, tax, education, environment, technology). Pass the flow_ref to fetch_dataset. For everything else use search_dataflows or browse https://data-explorer.oecd.org.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "description": "Optional topic filter"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "search_dataflows",
+    "description": "Search OECD's SDMX dataflow registry by keyword. Returns matching dataflow refs ready to pass to fetch_dataset. If results are noisy, refine with a more specific keyword or restrict by agency.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Keyword (matches dataflow names + descriptions)"
+        },
+        "agency": {
+          "type": "string",
+          "description": "Optional agency filter, e.g., OECD.SDD.NAD, OECD.ECO, OECD.ENV"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Max results (default 25, max 100)"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "fetch_dataset",
+    "description": "Fetch tidy rows from any OECD dataflow. flow_ref examples: \"OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_OECD,1.1\". The key string is a dot-separated dimension filter, one position per dimension (e.g., \"Q..USA..........\" for that flow) — leave empty to fetch everything). Use start/end periods like \"2020-Q1\" or \"2020\". Returns labeled rows; OECD enforces a result-size limit and may truncate broad queries — narrow with key dimensions or shorter time ranges.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_ref": {
+          "type": "string",
+          "description": "SDMX dataflow reference"
+        },
+        "key": {
+          "type": "string",
+          "description": "Dot-separated dimension key (or empty for all)"
+        },
+        "start_period": {
+          "type": "string",
+          "description": "e.g., \"2020\", \"2020-Q1\", \"2020-01\""
+        },
+        "end_period": {
+          "type": "string",
+          "description": "Inclusive end period"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Cap rows returned (default 5000)"
+        }
+      },
+      "required": [
+        "flow_ref"
+      ]
+    }
+  }
+]
