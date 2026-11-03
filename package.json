@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-oecd",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "OECD MCP — Organisation for Economic Co-operation and Development data (free, no auth) via the SDMX 2.1 REST API at sdmx.oecd.org.",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
     "mode": "gateway",
     "slug": "oecd",
     "gatewaySlug": "oecd",
-    "sourceHash": "v1-e47b80c5288e8b6ca552fa7c15801ed2c3d22eec686d6079ea196a5c40878140",
-    "sourceCommit": "b2c4383545bb35171d0ada2beb1c9c7168ea175e"
+    "sourceHash": "v1-280b381a28c65990c2537a39f4f5a05b315ddba64d7cd3c35ebbadbd4b8b6556",
+    "sourceCommit": "bed7faa04e7276899b5e3870ef11c98625371f2b"
   }
 }
